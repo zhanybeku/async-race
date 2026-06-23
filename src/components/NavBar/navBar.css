@@ -1,0 +1,25 @@
+.navbar {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin: 10px 80px;
+}
+
+.navbar h1 {
+    font-family: var(--font);
+    font-weight: var(--heading-weight);
+    font-size: var(--heading-size);
+    color: white;
+}
+
+.navbar button {
+    background-color: var(--blue);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: var(--other-size);
+    font-weight: var(--other-weight);
+}

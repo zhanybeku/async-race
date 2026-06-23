@@ -1,0 +1,40 @@
+.main-tabs {
+    background-color: var(--foreground);
+    padding: 20px 80px;
+    height: 100vh;
+    position: relative;
+    z-index: 2;
+}
+
+.tab-buttons {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: baseline;
+    margin-left: 80px;
+    position: relative;
+    z-index: 1;
+    margin-bottom: -5px;
+}
+
+.tab-buttons button {
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px 5px 0 0;
+    cursor: pointer;
+    font-size: calc(var(--other-size) * 1.6);
+    font-weight: var(--heading-weight);
+    transition: ease-in-out 0.1s;
+}
+
+.tab-buttons button.active {
+    background-color: var(--foreground);
+    color: white;
+    transform: translateY(-5px);
+}
+
+.tab-buttons button.inactive {
+    background-color: var(--inactive-tab);
+    color: white;
+}

@@ -14,10 +14,10 @@
   --grey-button: #566271;
   --grey-button-hover: #45505d;
 
-  --font: --heading: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   --heading-weight: 700;
   --other-weight: 400;
-  --heading-size: 62px;
+  --heading-size: 64px;
   --other-size: 18px;
 
   font-synthesis: none;
@@ -30,12 +30,13 @@
   } */
 }
 
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   height: 100%;
   background-color: var(--background);
-  color: var(--foreground);
+  color: white;
 }
 
 #root {

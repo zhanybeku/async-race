@@ -1,0 +1,38 @@
+.buttons-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin: 10px 0;
+}
+
+.racetrack-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: var(--table-bg);
+}
+
+.start-zone {
+    width: 160px;
+    padding: 8px;
+}
+
+.start-line,
+.finish-line {
+    width: 24px;
+    background-color: var(--foreground);
+    writing-mode: vertical-lr;
+    text-align: center;
+    font-weight: bold;
+    letter-spacing: 4px;
+    padding: 8px 4px;
+    font-family: var(--font);
+}
+
+.track {
+    background-color: var(--table-bg);
+}
+
+.finish-zone {
+    width: 80px;
+}

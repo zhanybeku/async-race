@@ -1,7 +1,12 @@
 import React from 'react';
-import type { IMainTabs } from '../../ts/mainTabs.interface';
+import './mainTabs.css';
 
-const TabButtons: React.FC<IMainTabs> = ({ selectedTab, setSelectedTab }) => {
+interface ITabButtons {
+    selectedTab: 'garage' | 'winners';
+    setSelectedTab: (tab: 'garage' | 'winners') => void;
+}
+
+const TabButtons: React.FC<ITabButtons> = ({ selectedTab, setSelectedTab }) => {
     return (
         <div className='tab-buttons'>
             <button
@@ -10,7 +15,7 @@ const TabButtons: React.FC<IMainTabs> = ({ selectedTab, setSelectedTab }) => {
             >
                 Garage
             </button>
-            
+
             <button
                 className={selectedTab === 'winners' ? 'active' : 'inactive'}
                 onClick={() => setSelectedTab('winners')}

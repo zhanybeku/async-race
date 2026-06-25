@@ -72,6 +72,8 @@
 
 .track {
     background-color: var(--table-bg);
+    padding-left: 16px;
+    font-family: var(--font);
 }
 
 .finish-zone {

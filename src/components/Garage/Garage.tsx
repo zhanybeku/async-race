@@ -7,6 +7,8 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import ReplayIcon from '@mui/icons-material/Replay';
 import TextField from '@mui/material/TextField';
 
+import { getCars } from '../../api/api';
+
 interface Car {
     id: number;
     name: string;
@@ -18,11 +20,7 @@ const Garage = () => {
     const [color, setColor] = useState('#000000');
 
     useEffect(() => {
-        setCars([
-            { id: 1, name: 'Car 1', color: 'red' },
-            { id: 2, name: 'Car 2', color: 'blue' },
-            { id: 3, name: 'Car 3', color: 'green' },
-        ]);
+        getCars().then(setCars);
     }, []);
 
     return (

@@ -5,6 +5,7 @@ import CarIcon from '../../assets/garage/car-top-view.svg?react';
 import Button from '@mui/material/Button';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import ReplayIcon from '@mui/icons-material/Replay';
+import TextField from '@mui/material/TextField';
 
 interface Car {
     id: number;
@@ -14,6 +15,7 @@ interface Car {
 
 const Garage = () => {
     const [cars, setCars] = useState<Car[]>([]);
+    const [color, setColor] = useState('#000000');
 
     useEffect(() => {
         setCars([
@@ -35,9 +37,21 @@ const Garage = () => {
                         RESET
                     </Button>
                 </div>
+
                 <div className='car-creation-buttons'>
-                    <textarea></textarea>
-                    color picker
+                    <TextField label="Car name" variant="outlined" size="small"
+                        sx={{
+                            '& .MuiInputBase-input': { backgroundColor: 'white', borderRadius: '4px' },
+                            '& .MuiInputLabel-root.MuiInputLabel-shrink': {
+                                backgroundColor: 'white',
+                                padding: '0 7px',
+                                marginLeft: '-4px',
+                                borderRadius: '4px',
+                            }
+                        }}
+                    />
+
+                    <input type="color" className='color-picker' value={color} onChange={(e) => setColor(e.target.value)} />
 
                     <Button variant="contained" sx={{ backgroundColor: 'var(--green)' }}>
                         CREATE

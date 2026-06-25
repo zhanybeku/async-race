@@ -15,6 +15,7 @@
 .start-zone {
     width: 160px;
     padding: 8px;
+    text-align: right;
 }
 
 .start-line,
@@ -35,4 +36,8 @@
 
 .finish-zone {
     width: 80px;
+}
+
+.carIcon {
+    transform: rotate(90deg);
 }

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import './garage.css';
+import CarIcon from '../../assets/garage/car-top-view.svg?react';
 
 interface Car {
     id: number;
@@ -31,12 +32,21 @@ const Garage = () => {
                     <button>CREATE</button>
                 </div>
             </div>
-            
+
             <table className='racetrack-table'>
                 <tbody>
                     {cars.map((car, index) => (
                         <tr key={car.id}>
-                            <td className='start-zone'>{car.name}</td>
+                            <td className='start-zone'>
+                                {/* {car.name} */}
+                                <CarIcon
+                                    className="carIcon"
+                                    width={40} height={40}
+                                    fill={car.color}
+                                    stroke="white"
+                                    strokeWidth={0.5}
+                                />
+                            </td>
                             {index === 0 && (
                                 <td className='start-line' rowSpan={cars.length}>START</td>
                             )}

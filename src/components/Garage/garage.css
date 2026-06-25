@@ -41,6 +41,15 @@
     width: 100%;
     border-collapse: collapse;
     background-color: var(--table-bg);
+    border-radius: 8px;
+}
+
+.racetrack-table tr {
+    border-bottom: 3px solid var(--foreground);
+}
+
+.racetrack-table tr:last-child {
+    border-bottom: none;
 }
 
 .start-zone {

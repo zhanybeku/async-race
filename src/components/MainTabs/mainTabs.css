@@ -28,6 +28,11 @@
     transition: ease-in-out 0.1s;
 }
 
+.tab-buttons button:hover {
+    transform: translateY(-2px);
+    filter: brightness(1);
+}
+
 .tab-buttons button.active {
     background-color: var(--foreground);
     color: white;

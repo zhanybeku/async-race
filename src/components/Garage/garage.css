@@ -14,6 +14,13 @@
     align-items: center;
 }
 
+.hover-text {
+    margin-left: 20px;
+    font-family: var(--font);
+    font-size: var(--other-size);
+    color: white;
+}
+
 .color-picker {
     appearance: none;
     width: 40px;
@@ -53,7 +60,7 @@
 }
 
 .start-zone {
-    width: 160px;
+    width: 80px;
     padding: 8px;
     text-align: right;
 }
@@ -74,6 +81,18 @@
     background-color: var(--table-bg);
     padding-left: 16px;
     font-family: var(--font);
+    font-size: var(--other-size);
+}
+
+.car-name {
+    padding: 8px;
+    border-radius: 4px;
+}
+
+.car-name:hover {
+    cursor: pointer;
+    background-color: var(--table-borders);
+    transition: ease-in-out 0.2s;
 }
 
 .finish-zone {
@@ -82,4 +101,11 @@
 
 .carIcon {
     transform: rotate(90deg);
+}
+
+.edit-car-container {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    align-items: center;
 }

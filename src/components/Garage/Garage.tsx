@@ -16,12 +16,35 @@ interface Car {
 }
 
 const Garage = () => {
+    // The cars state
     const [cars, setCars] = useState<Car[]>([]);
-    const [color, setColor] = useState('#000000');
+    
+    // The new car's states
+    const [newCarColor, setNewCarColor] = useState('#000000');
+    const [newCarName, setNewCarName] = useState<string>('');
+
+    // The states for the car that's being edited
+    const [editId, setEditId] = useState<number | null>(null);
+    const [editCarName, setEditCarName] = useState<string>('');
+    const [editCarColor, setEditCarColor] = useState<string>('#000000');
 
     useEffect(() => {
         getCars().then(setCars);
     }, []);
+
+    const onCarClick = (id: number) => {
+        setEditId(id);
+        setEditCarName(cars.find(car => car.id === id)?.name || '');
+        setEditCarColor(cars.find(car => car.id === id)?.color || '#000000');
+    }
+
+    const onSaveCar = (id: number) => {
+        console.log(id)
+    }
+
+    const onCreateCar = () => {
+        console.log(newCarName, newCarColor)
+    }
 
     return (
         <div>
@@ -34,6 +57,8 @@ const Garage = () => {
                     <Button variant="contained" startIcon={<ReplayIcon />} sx={{ backgroundColor: 'var(--blue)' }}>
                         RESET
                     </Button>
+
+                    <span className='hover-text'>Click a car's name to edit it!</span>
                 </div>
 
                 <div className='car-creation-buttons'>
@@ -47,11 +72,13 @@ const Garage = () => {
                                 borderRadius: '4px',
                             }
                         }}
+                        value={newCarName}
+                        onChange={(e) => setNewCarName(e.target.value)}
                     />
 
-                    <input type="color" className='color-picker' value={color} onChange={(e) => setColor(e.target.value)} />
+                    <input type="color" className='color-picker' value={newCarColor} onChange={(e) => setNewCarColor(e.target.value)} />
 
-                    <Button variant="contained" sx={{ backgroundColor: 'var(--green)' }}>
+                    <Button variant="contained" sx={{ backgroundColor: 'var(--green)' }} onClick={onCreateCar}>
                         CREATE
                     </Button>
 
@@ -75,10 +102,34 @@ const Garage = () => {
                             {index === 0 && (
                                 <td className='start-line' rowSpan={cars.length}>START</td>
                             )}
-                            <td className='track'>{car.name}</td>
+
+                            <td className='track'>
+                                {editId === car.id ? (
+                                    <div className='edit-car-container'>
+                                        <TextField variant="outlined" size="small" 
+                                            value={editCarName} 
+                                            onChange={(e) => setEditCarName(e.target.value)}
+                                            sx={{
+                                                '& .MuiInputBase-input': { backgroundColor: 'white', borderRadius: '4px' },
+                                            }}
+                                        />
+
+                                        <input type="color" className='color-picker' value={editCarColor} onChange={(e) => setEditCarColor(e.target.value)} />
+
+                                        <Button variant="contained" sx={{ backgroundColor: 'var(--green)' }} onClick={() => onSaveCar(car.id)}>SAVE</Button>
+                                        <Button variant="contained" sx={{ backgroundColor: 'var(--red)' }} onClick={() => setEditId(null)}>CANCEL</Button>
+
+
+                                    </div>
+                                ) : (
+                                    <span className='car-name' onClick={() => onCarClick(car.id)}>{car.name}</span>
+                                )}
+                            </td>
+
                             {index === 0 && (
                                 <td className='finish-line' rowSpan={cars.length}>FINISH</td>
                             )}
+
                             <td className='finish-zone'></td>
                         </tr>
                     ))}

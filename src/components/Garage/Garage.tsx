@@ -2,6 +2,10 @@ import { useState, useEffect } from 'react';
 import './garage.css';
 import CarIcon from '../../assets/garage/car-top-view.svg?react';
 
+import Button from '@mui/material/Button';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import ReplayIcon from '@mui/icons-material/Replay';
+
 interface Car {
     id: number;
     name: string;
@@ -23,13 +27,22 @@ const Garage = () => {
         <div>
             <div className='buttons-container'>
                 <div className='race-buttons'>
-                    <button>RACE</button>
-                    <button>RESET</button>
+                    <Button variant="contained" startIcon={<PlayArrowIcon />} sx={{ backgroundColor: 'var(--red)' }}>
+                        START
+                    </Button>
+
+                    <Button variant="contained" startIcon={<ReplayIcon />} sx={{ backgroundColor: 'var(--blue)' }}>
+                        RESET
+                    </Button>
                 </div>
                 <div className='car-creation-buttons'>
                     <textarea></textarea>
                     color picker
-                    <button>CREATE</button>
+
+                    <Button variant="contained" sx={{ backgroundColor: 'var(--green)' }}>
+                        CREATE
+                    </Button>
+
                 </div>
             </div>
 
@@ -50,7 +63,7 @@ const Garage = () => {
                             {index === 0 && (
                                 <td className='start-line' rowSpan={cars.length}>START</td>
                             )}
-                            <td className='track'></td>
+                            <td className='track'>{car.name}</td>
                             {index === 0 && (
                                 <td className='finish-line' rowSpan={cars.length}>FINISH</td>
                             )}

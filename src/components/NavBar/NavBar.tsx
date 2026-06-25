@@ -1,11 +1,14 @@
 import React from 'react';
 import './navBar.css';
+import Button from '@mui/material/Button';
 
 const NavBar: React.FC = () => {
     return (
         <nav className='navbar'>
             <h1>Async Race</h1>
-            <button>Generate Cars</button>
+            <Button variant="contained">
+                Generate Cars
+            </Button>
         </nav>
     )
 }

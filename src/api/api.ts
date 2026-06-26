@@ -1,4 +1,4 @@
-import type { CreateCar } from "../ts/interfaces";
+import type { CreateCar, EngineDriveResponse, EngineStartResponse } from "../ts/interfaces";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -31,4 +31,28 @@ export const deleteCar = async (id: number) => {
         method: 'DELETE',
     });
     return response.json();
+};
+
+const patchEngine = async (id: number, status: 'started' | 'stopped' | 'drive') => {
+    const params = new URLSearchParams({ id: String(id), status });
+    const response = await fetch(`${BASE_URL}/engine?${params}`, {
+        method: 'PATCH',
+    });
+
+    if (!response.ok) {
+        throw new Error(await response.text());
+    }
+
+    return response.json();
+};
+
+export const startStopEngine = async (
+    id: number,
+    status: 'started' | 'stopped',
+): Promise<EngineStartResponse> => {
+    return patchEngine(id, status);
+};
+
+export const driveEngine = async (id: number): Promise<EngineDriveResponse> => {
+    return patchEngine(id, 'drive');
 };

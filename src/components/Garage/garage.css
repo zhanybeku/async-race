@@ -103,7 +103,8 @@
     transform: rotate(90deg);
 }
 
-.edit-car-container {
+.edit-car-container,
+.delete-car-container {
     display: flex;
     flex-direction: row;
     gap: 10px;

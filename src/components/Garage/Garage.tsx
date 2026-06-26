@@ -6,8 +6,9 @@ import Button from '@mui/material/Button';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import ReplayIcon from '@mui/icons-material/Replay';
 import TextField from '@mui/material/TextField';
+import DeleteIcon from '@mui/icons-material/Delete';
 
-import { createCar, getCars, updateCar } from '../../api/api';
+import { createCar, deleteCar, getCars, updateCar } from '../../api/api';
 
 import type { CreateCar } from '../../ts/interfaces';
 
@@ -25,10 +26,11 @@ const Garage = () => {
     const [newCarColor, setNewCarColor] = useState('#000000');
     const [newCarName, setNewCarName] = useState<string>('');
 
-    // The states for the car that's being edited
+    // The states for the car that's being edited or deleted
     const [editId, setEditId] = useState<number | null>(null);
     const [editCarName, setEditCarName] = useState<string>('');
     const [editCarColor, setEditCarColor] = useState<string>('#000000');
+    const [deleteId, setDeleteId] = useState<number | null>(null);
 
     useEffect(() => {
         getCars().then(setCars);
@@ -55,6 +57,17 @@ const Garage = () => {
         setNewCarColor('#000000');
     }
 
+    const onSetToDelete = (id: number) => {
+        setEditId(null);
+        setEditCarName('');
+        setEditCarColor('#000000');
+        setDeleteId(id);
+    }
+
+    const onDeleteCar = (id: number) => {
+        deleteCar(id).then(() => getCars().then(setCars));
+    }
+
     return (
         <div>
             <div className='buttons-container'>
@@ -67,7 +80,7 @@ const Garage = () => {
                         RESET
                     </Button>
 
-                    <span className='hover-text'>Click a car's name to edit it!</span>
+                    <span className='hover-text'>Click a car's name to edit or delete it!</span>
                 </div>
 
                 <div className='car-creation-buttons'>
@@ -126,13 +139,20 @@ const Garage = () => {
                                         <input type="color" className='color-picker' value={editCarColor} onChange={(e) => setEditCarColor(e.target.value)} />
 
                                         <Button variant="contained" sx={{ backgroundColor: 'var(--green)' }} onClick={() => onSaveCar(car.id)}>SAVE</Button>
-                                        <Button variant="contained" sx={{ backgroundColor: 'var(--red)' }} onClick={() => setEditId(null)}>CANCEL</Button>
+                                        <Button variant="contained" sx={{ backgroundColor: 'var(--blue)' }} onClick={() => setEditId(null)}>CANCEL</Button>
 
-
+                                        <Button variant="contained" sx={{ backgroundColor: 'var(--red)' }} onClick={() => onSetToDelete(car.id)}><DeleteIcon /></Button>
                                     </div>
-                                ) : (
-                                    <span className='car-name' onClick={() => onCarClick(car.id)}>{car.name}</span>
-                                )}
+                                ) : deleteId === car.id ? (
+                                    <div className='delete-car-container'>
+                                        <span>Are you sure you want to delete this car?</span>
+                                        <Button variant="contained" sx={{ backgroundColor: 'var(--red)' }} onClick={() => onDeleteCar(car.id)}>YES</Button>
+                                        <Button variant="contained" sx={{ backgroundColor: 'var(--blue)' }} onClick={() => setDeleteId(null)}>NO</Button>
+                                    </div>
+                                ) :
+                                    (
+                                        <span className='car-name' onClick={() => onCarClick(car.id)}>{car.name}</span>
+                                    )}
                             </td>
 
                             {index === 0 && (

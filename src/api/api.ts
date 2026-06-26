@@ -25,3 +25,10 @@ export const updateCar = async (id: number, car: CreateCar) => {
     });
     return response.json();
 };
+
+export const deleteCar = async (id: number) => {
+    const response = await fetch(`${BASE_URL}/garage/${id}`, {
+        method: 'DELETE',
+    });
+    return response.json();
+};

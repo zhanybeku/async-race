@@ -7,7 +7,9 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import ReplayIcon from '@mui/icons-material/Replay';
 import TextField from '@mui/material/TextField';
 
-import { getCars } from '../../api/api';
+import { createCar, getCars, updateCar } from '../../api/api';
+
+import type { CreateCar } from '../../ts/interfaces';
 
 interface Car {
     id: number;
@@ -18,7 +20,7 @@ interface Car {
 const Garage = () => {
     // The cars state
     const [cars, setCars] = useState<Car[]>([]);
-    
+
     // The new car's states
     const [newCarColor, setNewCarColor] = useState('#000000');
     const [newCarName, setNewCarName] = useState<string>('');
@@ -39,11 +41,18 @@ const Garage = () => {
     }
 
     const onSaveCar = (id: number) => {
-        console.log(id)
+        if (!editCarName.trim()) return;
+        const updatedCar: CreateCar = { name: editCarName, color: editCarColor };
+        updateCar(id, updatedCar).then(() => getCars().then(setCars));
+        setEditId(null);
     }
 
     const onCreateCar = () => {
-        console.log(newCarName, newCarColor)
+        if (!newCarName.trim()) return;
+        const newCar: CreateCar = { name: newCarName, color: newCarColor };
+        createCar(newCar).then(() => getCars().then(setCars));
+        setNewCarName('');
+        setNewCarColor('#000000');
     }
 
     return (
@@ -106,8 +115,8 @@ const Garage = () => {
                             <td className='track'>
                                 {editId === car.id ? (
                                     <div className='edit-car-container'>
-                                        <TextField variant="outlined" size="small" 
-                                            value={editCarName} 
+                                        <TextField variant="outlined" size="small"
+                                            value={editCarName}
                                             onChange={(e) => setEditCarName(e.target.value)}
                                             sx={{
                                                 '& .MuiInputBase-input': { backgroundColor: 'white', borderRadius: '4px' },

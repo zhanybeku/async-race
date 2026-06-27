@@ -41,7 +41,7 @@ const Garage = () => {
 
   // States for engine and driving
   const [racingIds, setRacingIds] = useState<Set<number>>(new Set());
-  //
+  const [brokenIds, setBrokenIds] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     getCars().then(setCars);
@@ -82,11 +82,41 @@ const Garage = () => {
 
   // Engine functions
   const onDriveCar = async (id: number) => {
-    console.log(id);
+    if (racingIds.has(id)) return;
+
+    setRacingIds((prev) => new Set(prev).add(id));
+
+    try {
+      await startStopEngine(id, "started");
+      await driveEngine(id);
+
+      setBrokenIds((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (message.includes("broken down")) {
+        setBrokenIds((prev) => new Set(prev).add(id));
+      } else {
+        console.error(error);
+      }
+    }
   };
 
-  const onResetCar = (id: number) => {
-    console.log(id);
+  const onResetCar = async (id: number) => {
+    await startStopEngine(id, "stopped");
+    setRacingIds((prev) => {
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
+    setBrokenIds((prev) => {
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
   };
 
   return (

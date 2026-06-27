@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import "./garage.css";
 import CarIcon from "../../assets/garage/car-top-view.svg?react";
+import { startCarAnimation } from "../../utils/startCarAnimation";
 
 import Button from "@mui/material/Button";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";

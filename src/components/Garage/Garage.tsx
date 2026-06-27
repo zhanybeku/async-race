@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import "./garage.css";
 import CarIcon from "../../assets/garage/car-top-view.svg?react";
 
@@ -43,6 +43,8 @@ const Garage = () => {
   const [racingIds, setRacingIds] = useState<Set<number>>(new Set());
   const [brokenIds, setBrokenIds] = useState<Set<number>>(new Set());
 
+  const carRefs = useRef<Record<number, HTMLDivElement | null>>({});
+
   useEffect(() => {
     getCars().then(setCars);
   }, []);
@@ -84,10 +86,21 @@ const Garage = () => {
   const onDriveCar = async (id: number) => {
     if (racingIds.has(id)) return;
 
+    const carEl = carRefs.current[id];
+    if (!carEl) return;
+
     setRacingIds((prev) => new Set(prev).add(id));
 
+    let racingAnimation: ReturnType<typeof startCarAnimation> | null = null;
+
     try {
-      await startStopEngine(id, "started");
+      const { velocity, distance } = await startStopEngine(id, "started");
+      racingAnimation = startCarAnimation(
+        carEl,
+        velocity,
+        distance,
+      );
+
       await driveEngine(id);
 
       setBrokenIds((prev) => {
@@ -98,6 +111,7 @@ const Garage = () => {
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       if (message.includes("broken down")) {
+        racingAnimation?.stop();
         setBrokenIds((prev) => new Set(prev).add(id));
       } else {
         console.error(error);
@@ -202,14 +216,20 @@ const Garage = () => {
                     </Button>
                   </div>
 
-                  <CarIcon
-                    className="carIcon"
-                    width={40}
-                    height={40}
-                    fill={car.color}
-                    stroke="white"
-                    strokeWidth={0.5}
-                  />
+                  <div
+                    ref={(node) => {
+                      carRefs.current[car.id] = node;
+                    }}
+                  >
+                    <CarIcon
+                      className="carIcon"
+                      width={40}
+                      height={40}
+                      fill={car.color}
+                      stroke="white"
+                      strokeWidth={0.5}
+                    />
+                  </div>
                 </div>
               </td>
               {index === 0 && (

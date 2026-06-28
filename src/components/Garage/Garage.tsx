@@ -21,13 +21,7 @@ import {
   updateCar,
 } from "../../api/api";
 
-import type { CreateCar } from "../../ts/interfaces";
-
-interface Car {
-  id: number;
-  name: string;
-  color: string;
-}
+import type { Car, CreateCar } from "../../ts/interfaces";
 
 const Garage = () => {
   // The cars state
@@ -50,7 +44,7 @@ const Garage = () => {
   const carRefs = useRef<Record<number, HTMLDivElement | null>>({});
 
   useEffect(() => {
-    getCars().then(setCars);
+    getCars().then(({ cars }) => setCars(cars));
   }, []);
 
   // Car editing and creation
@@ -63,14 +57,14 @@ const Garage = () => {
   const onSaveCar = (id: number) => {
     if (!editCarName.trim()) return;
     const updatedCar: CreateCar = { name: editCarName, color: editCarColor };
-    updateCar(id, updatedCar).then(() => getCars().then(setCars));
+    updateCar(id, updatedCar).then(() => getCars().then(({ cars }) => setCars(cars)));
     setEditId(null);
   };
 
   const onCreateCar = () => {
     if (!newCarName.trim()) return;
     const newCar: CreateCar = { name: newCarName, color: newCarColor };
-    createCar(newCar).then(() => getCars().then(setCars));
+    createCar(newCar).then(() => getCars().then(({ cars }) => setCars(cars)));
     setNewCarName("");
     setNewCarColor("#000000");
   };
@@ -83,7 +77,7 @@ const Garage = () => {
   };
 
   const onDeleteCar = (id: number) => {
-    deleteCar(id).then(() => getCars().then(setCars));
+    deleteCar(id).then(() => getCars().then(({ cars }) => setCars(cars)));
   };
 
   // Engine functions
@@ -138,6 +132,14 @@ const Garage = () => {
     });
   };
 
+  const onStartAll = () => {
+    cars.forEach((car) => onDriveCar(car.id));
+  };
+
+  const onResetAll = () => {
+    cars.forEach((car) => onResetCar(car.id));
+  };
+
   return (
     <div>
       <div className="buttons-container">
@@ -146,6 +148,7 @@ const Garage = () => {
             variant="contained"
             startIcon={<PlayArrowIcon />}
             sx={{ backgroundColor: "var(--red)" }}
+            onClick={onStartAll}
           >
             START
           </Button>
@@ -154,6 +157,7 @@ const Garage = () => {
             variant="contained"
             startIcon={<ReplayIcon />}
             sx={{ backgroundColor: "var(--blue)" }}
+            onClick={onResetAll}
           >
             RESET
           </Button>

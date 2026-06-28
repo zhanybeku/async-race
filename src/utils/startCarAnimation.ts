@@ -38,7 +38,7 @@ export function startCarAnimation(element: HTMLElement, velocity: number) {
   if (!metrics) return { stop: () => {} };
 
   const { travelPx, trackLengthPx } = metrics;
-  const durationMs = (trackLengthPx / velocity) * 1000;
+  const durationMs = (trackLengthPx / velocity) * 500;
 
   element.style.transform = "translateX(0px)";
 

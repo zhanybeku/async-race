@@ -33,28 +33,12 @@ function getAnimationMetrics(element: HTMLElement): AnimationMetrics | null {
 
 const activeAnimations = new WeakMap<HTMLElement, () => void>();
 
-export function startCarAnimation(
-  element: HTMLElement,
-  velocity: number,
-) {
+export function startCarAnimation(element: HTMLElement, velocity: number) {
   const metrics = getAnimationMetrics(element);
-  if (!metrics) {
-    console.warn("Could not measure track for car animation");
-    return { stop: () => {} };
-  }
+  if (!metrics) return { stop: () => {} };
 
   const { travelPx, trackLengthPx } = metrics;
-
-  if (travelPx === 0) {
-    console.warn("Travel distance is 0 — car cannot move across the track");
-  }
-
   const durationMs = (trackLengthPx / velocity) * 1000;
-  const durationSec = durationMs / 1000;
-
-  console.info(
-    `Race: ${travelPx.toFixed(0)}px over ${durationSec.toFixed(1)}s (track ${trackLengthPx.toFixed(0)}px, velocity ${velocity})`,
-  );
 
   element.style.transform = "translateX(0px)";
 

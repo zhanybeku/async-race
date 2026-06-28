@@ -1,7 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import "./garage.css";
 import CarIcon from "../../assets/garage/car-top-view.svg?react";
-import { startCarAnimation } from "../../utils/startCarAnimation";
+import {
+  resetCarPosition,
+  startCarAnimation,
+} from "../../utils/startCarAnimation";
 
 import Button from "@mui/material/Button";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
@@ -87,20 +90,19 @@ const Garage = () => {
   const onDriveCar = async (id: number) => {
     if (racingIds.has(id)) return;
 
-    const carEl = carRefs.current[id];
-    if (!carEl) return;
-
     setRacingIds((prev) => new Set(prev).add(id));
 
     let racingAnimation: ReturnType<typeof startCarAnimation> | null = null;
 
     try {
-      const { velocity, distance } = await startStopEngine(id, "started");
-      racingAnimation = startCarAnimation(
-        carEl,
-        velocity,
-        distance,
-      );
+      const { velocity } = await startStopEngine(id, "started");
+
+      await new Promise(requestAnimationFrame);
+
+      const carEl = carRefs.current[id];
+      if (!carEl) return;
+
+      racingAnimation = startCarAnimation(carEl, velocity);
 
       await driveEngine(id);
 
@@ -122,6 +124,8 @@ const Garage = () => {
 
   const onResetCar = async (id: number) => {
     await startStopEngine(id, "stopped");
+    const carEl = carRefs.current[id];
+    if (carEl) resetCarPosition(carEl);
     setRacingIds((prev) => {
       const next = new Set(prev);
       next.delete(id);
@@ -217,19 +221,24 @@ const Garage = () => {
                     </Button>
                   </div>
 
-                  <div
-                    ref={(node) => {
-                      carRefs.current[car.id] = node;
-                    }}
-                  >
-                    <CarIcon
-                      className="carIcon"
-                      width={40}
-                      height={40}
-                      fill={car.color}
-                      stroke="white"
-                      strokeWidth={0.5}
-                    />
+                  <div className="car-icon-slot">
+                    <div
+                      className={`car-icon-wrapper${
+                        brokenIds.has(car.id) ? " car-icon-wrapper--broken" : ""
+                      }${racingIds.has(car.id) ? " car-icon-wrapper--racing" : ""}`}
+                      ref={(node) => {
+                        carRefs.current[car.id] = node;
+                      }}
+                    >
+                      <CarIcon
+                        className="carIcon"
+                        width={40}
+                        height={40}
+                        fill={car.color}
+                        stroke="white"
+                        strokeWidth={0.5}
+                      />
+                    </div>
                   </div>
                 </div>
               </td>

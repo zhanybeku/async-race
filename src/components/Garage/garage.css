@@ -49,6 +49,13 @@
   border-collapse: collapse;
   background-color: var(--table-bg);
   border-radius: 8px;
+  overflow: visible;
+}
+
+.racetrack-table tbody,
+.racetrack-table tr,
+.racetrack-table td {
+  overflow: visible;
 }
 
 .racetrack-table tr {
@@ -63,6 +70,7 @@
   width: 80px;
   padding: 8px;
   text-align: right;
+  overflow: visible;
 }
 
 .start-zone-div {
@@ -107,9 +115,28 @@
   width: 80px;
 }
 
-.carIcon {
-  transform: rotate(90deg);
+.car-icon-slot {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+}
+
+.car-icon-wrapper {
   position: relative;
+  z-index: 2;
+}
+
+.car-icon-wrapper--racing {
+  z-index: 100;
+}
+
+.car-icon-wrapper--broken {
+  opacity: 0.5;
+}
+
+.carIcon {
+  display: block;
+  transform: rotate(90deg);
 }
 
 .edit-car-container,

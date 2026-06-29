@@ -131,7 +131,8 @@
 }
 
 .car-icon-wrapper--broken {
-  opacity: 0.5;
+  opacity: 0.3;
+  filter: grayscale(0.6);
 }
 
 .carIcon {
@@ -152,4 +153,34 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
+}
+
+.garage-pagination {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.garage-pagination__total {
+  font-family: var(--font);
+  font-size: calc(var(--other-size) * 0.8);
+  color: white;
+}
+
+.garage-pagination__controls {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+.garage-pagination__page {
+  font-family: var(--font);
+  font-size: var(--other-size);
+  color: white;
+  min-width: 56px;
+  text-align: center;
 }

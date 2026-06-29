@@ -1,0 +1,36 @@
+.winners {
+  margin-top: 20px;
+}
+
+.winners-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: var(--table-bg);
+  border-radius: 8px;
+  overflow: hidden;
+  font-family: var(--font);
+  font-size: var(--other-size);
+}
+
+.winners-table th,
+.winners-table td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 2px solid var(--foreground);
+}
+
+.winners-table th {
+  background-color: var(--foreground);
+  color: white;
+  font-weight: var(--heading-weight);
+}
+
+.winners-table tr:last-child td {
+  border-bottom: none;
+}
+
+.winners-table__empty {
+  text-align: center;
+  color: white;
+  padding: 24px;
+}

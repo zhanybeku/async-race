@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import "./garage.css";
 import CarIcon from "../../assets/garage/car-top-view.svg?react";
 import {
@@ -7,25 +7,38 @@ import {
 } from "../../utils/startCarAnimation";
 
 import Button from "@mui/material/Button";
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import ReplayIcon from "@mui/icons-material/Replay";
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import TextField from "@mui/material/TextField";
 import DeleteIcon from "@mui/icons-material/Delete";
 
 import {
+  createWinner,
   createCar,
   deleteCar,
   driveEngine,
   getCars,
+  getWinner,
   startStopEngine,
+  updateWinner,
   updateCar,
 } from "../../api/api";
 
 import type { Car, CreateCar } from "../../ts/interfaces";
 
+const CARS_PER_PAGE = 10;
+type SuccessfulRaceResult = { id: number; time: number };
+type RaceAnnouncement = { name: string; time: number };
+
 const Garage = () => {
   // The cars state
   const [cars, setCars] = useState<Car[]>([]);
+  const [page, setPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
 
   // The new car's states
   const [newCarColor, setNewCarColor] = useState("#000000");
@@ -40,12 +53,33 @@ const Garage = () => {
   // States for engine and driving
   const [racingIds, setRacingIds] = useState<Set<number>>(new Set());
   const [brokenIds, setBrokenIds] = useState<Set<number>>(new Set());
+  const [raceAnnouncement, setRaceAnnouncement] = useState<RaceAnnouncement | null>(
+    null,
+  );
 
   const carRefs = useRef<Record<number, HTMLDivElement | null>>({});
 
+  const totalPages = Math.max(1, Math.ceil(totalCount / CARS_PER_PAGE));
+  const shownCarsCount = cars.length;
+
+  const loadCars = useCallback((pageNum: number) =>
+    getCars({ _page: pageNum, _limit: CARS_PER_PAGE }).then(
+      ({ cars, totalCount }) => {
+        const total = totalCount ?? 0;
+
+        if (cars.length === 0 && pageNum > 1) {
+          setPage(pageNum - 1);
+          return;
+        }
+
+        setCars(cars);
+        setTotalCount(total);
+      },
+    ), []);
+
   useEffect(() => {
-    getCars().then(({ cars }) => setCars(cars));
-  }, []);
+    loadCars(page);
+  }, [page, loadCars]);
 
   // Car editing and creation
   const onCarClick = (id: number) => {
@@ -57,14 +91,14 @@ const Garage = () => {
   const onSaveCar = (id: number) => {
     if (!editCarName.trim()) return;
     const updatedCar: CreateCar = { name: editCarName, color: editCarColor };
-    updateCar(id, updatedCar).then(() => getCars().then(({ cars }) => setCars(cars)));
+    updateCar(id, updatedCar).then(() => loadCars(page));
     setEditId(null);
   };
 
   const onCreateCar = () => {
     if (!newCarName.trim()) return;
     const newCar: CreateCar = { name: newCarName, color: newCarColor };
-    createCar(newCar).then(() => getCars().then(({ cars }) => setCars(cars)));
+    createCar(newCar).then(() => loadCars(page));
     setNewCarName("");
     setNewCarColor("#000000");
   };
@@ -77,26 +111,49 @@ const Garage = () => {
   };
 
   const onDeleteCar = (id: number) => {
-    deleteCar(id).then(() => getCars().then(({ cars }) => setCars(cars)));
+    deleteCar(id).then(() => loadCars(page));
   };
 
-  // Engine functions
-  const onDriveCar = async (id: number) => {
-    if (racingIds.has(id)) return;
+  const fetchAllCars = async (): Promise<Car[]> => {
+    const { cars, totalCount } = await getCars({ _page: 1, _limit: 1 });
+    const total = totalCount ?? cars.length;
 
-    setRacingIds((prev) => new Set(prev).add(id));
+    if (total <= cars.length) return cars;
 
+    const { cars: allCars } = await getCars({ _page: 1, _limit: total });
+    return allCars;
+  };
+
+  const saveWinner = async (id: number, time: number) => {
+    try {
+      const existingWinner = await getWinner(id);
+      await updateWinner(id, {
+        wins: existingWinner.wins + 1,
+        time: Math.min(existingWinner.time, time),
+      });
+    } catch {
+      await createWinner({
+        id,
+        wins: 1,
+        time,
+      });
+    }
+  };
+
+  const runCarRace = async (
+    id: number,
+  ): Promise<SuccessfulRaceResult | null> => {
     let racingAnimation: ReturnType<typeof startCarAnimation> | null = null;
 
     try {
-      const { velocity } = await startStopEngine(id, "started");
-
-      await new Promise(requestAnimationFrame);
+      const { velocity, distance } = await startStopEngine(id, "started");
+      const raceTime = distance / velocity / 1000;
 
       const carEl = carRefs.current[id];
-      if (!carEl) return;
-
-      racingAnimation = startCarAnimation(carEl, velocity);
+      if (carEl) {
+        await new Promise(requestAnimationFrame);
+        racingAnimation = startCarAnimation(carEl, velocity);
+      }
 
       await driveEngine(id);
 
@@ -105,6 +162,7 @@ const Garage = () => {
         next.delete(id);
         return next;
       });
+      return { id, time: raceTime };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       if (message.includes("broken down")) {
@@ -113,11 +171,25 @@ const Garage = () => {
       } else {
         console.error(error);
       }
+      return null;
     }
   };
 
-  const onResetCar = async (id: number) => {
-    await startStopEngine(id, "stopped");
+  const onDriveCar = async (id: number) => {
+    let shouldDrive = false;
+
+    setRacingIds((prev) => {
+      if (prev.has(id)) return prev;
+      shouldDrive = true;
+      return new Set(prev).add(id);
+    });
+
+    if (!shouldDrive) return;
+
+    await runCarRace(id);
+  };
+
+  const resetCarUiState = (id: number) => {
     const carEl = carRefs.current[id];
     if (carEl) resetCarPosition(carEl);
     setRacingIds((prev) => {
@@ -132,12 +204,63 @@ const Garage = () => {
     });
   };
 
-  const onStartAll = () => {
-    cars.forEach((car) => onDriveCar(car.id));
+  const onResetCar = async (id: number) => {
+    resetCarUiState(id);
+    await startStopEngine(id, "stopped");
   };
 
-  const onResetAll = () => {
-    cars.forEach((car) => onResetCar(car.id));
+  const onStartAll = async () => {
+    const allCars = await fetchAllCars();
+    setRaceAnnouncement(null);
+
+    setRacingIds((prev) => {
+      const next = new Set(prev);
+      allCars.forEach((car) => next.add(car.id));
+      return next;
+    });
+
+    const results = await Promise.all(allCars.map((car) => runCarRace(car.id)));
+    const successfulRuns = results.filter(
+      (result): result is SuccessfulRaceResult => result !== null,
+    );
+
+    if (successfulRuns.length === 0) return;
+
+    const winner = successfulRuns.reduce((best, current) =>
+      current.time < best.time ? current : best,
+    );
+
+    const winnerTime = Number(winner.time.toFixed(2));
+    await saveWinner(winner.id, winnerTime);
+
+    const winningCar = allCars.find((car) => car.id === winner.id);
+    if (winningCar) {
+      setRaceAnnouncement({ name: winningCar.name, time: winnerTime });
+    }
+  };
+
+  const onResetAll = async () => {
+    setRaceAnnouncement(null);
+    const allCars = await fetchAllCars();
+    const allIds = allCars.map((car) => car.id);
+
+    allIds.forEach((id) => {
+      const carEl = carRefs.current[id];
+      if (carEl) resetCarPosition(carEl);
+    });
+
+    setRacingIds((prev) => {
+      const next = new Set(prev);
+      allIds.forEach((id) => next.delete(id));
+      return next;
+    });
+    setBrokenIds((prev) => {
+      const next = new Set(prev);
+      allIds.forEach((id) => next.delete(id));
+      return next;
+    });
+
+    await Promise.allSettled(allIds.map((id) => startStopEngine(id, "stopped")));
   };
 
   return (
@@ -334,6 +457,64 @@ const Garage = () => {
           ))}
         </tbody>
       </table>
+
+      <div className="garage-pagination">
+        <div className="garage-pagination__controls">
+          <Button
+            size="small"
+            disabled={page <= 1}
+            onClick={() => setPage((prev) => prev - 1)}
+          >
+            <ChevronLeftIcon fontSize="small" />
+          </Button>
+
+          <span className="garage-pagination__page">{page} / {totalPages}</span>
+
+          <Button
+            size="small"
+            disabled={page >= totalPages}
+            onClick={() => setPage((prev) => prev + 1)}
+          >
+            <ChevronRightIcon fontSize="small" />
+          </Button>
+        </div>
+
+        <span className="garage-pagination__total">
+          {shownCarsCount} of {totalCount} total cars
+        </span>
+      </div>
+
+      <Snackbar
+        open={raceAnnouncement !== null}
+        autoHideDuration={6000}
+        onClose={() => setRaceAnnouncement(null)}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        sx={{
+          top: "38% !important",
+          left: "50% !important",
+          right: "auto !important",
+          transform: "translateX(-50%) !important",
+        }}
+      >
+        <Alert
+          severity="success"
+          variant="filled"
+          onClose={() => setRaceAnnouncement(null)}
+          sx={{
+            minWidth: 360,
+            py: 2.5,
+            px: 4,
+            fontSize: "1.35rem",
+            fontWeight: 600,
+            alignItems: "center",
+            boxShadow: 6,
+          }}
+        >
+          {raceAnnouncement
+            ? `Winner: ${raceAnnouncement.name} — ${raceAnnouncement.time}s`
+            : ""}
+        </Alert>
+      </Snackbar>
     </div>
   );
 };

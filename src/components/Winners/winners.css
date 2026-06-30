@@ -34,3 +34,33 @@
   color: white;
   padding: 24px;
 }
+
+.winners-pagination {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.winners-pagination__total {
+  font-family: var(--font);
+  font-size: calc(var(--other-size) * 0.8);
+  color: white;
+}
+
+.winners-pagination__controls {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+.winners-pagination__page {
+  font-family: var(--font);
+  font-size: var(--other-size);
+  color: white;
+  min-width: 56px;
+  text-align: center;
+}

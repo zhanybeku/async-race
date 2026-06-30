@@ -6,9 +6,15 @@ import Winners from '../Winners/Winners';
 
 interface IMainTabs {
     selectedTab: 'garage' | 'winners';
+    winnersVersion: number;
+    onRaceFinish: () => void;
 }
 
-const MainTabs: React.FC<IMainTabs> = ({ selectedTab }) => {
+const MainTabs: React.FC<IMainTabs> = ({
+    selectedTab,
+    winnersVersion,
+    onRaceFinish,
+}) => {
 
     return (
         <div className='main-tabs'>
@@ -16,14 +22,14 @@ const MainTabs: React.FC<IMainTabs> = ({ selectedTab }) => {
                 className={`garage-tab ${selectedTab === 'garage' ? '' : 'tab-panel-hidden'}`}
                 aria-hidden={selectedTab !== 'garage'}
             >
-                <Garage />
+                <Garage onRaceFinish={onRaceFinish} />
             </div>
 
             <div
                 className={`winners-tab ${selectedTab === 'winners' ? '' : 'tab-panel-hidden'}`}
                 aria-hidden={selectedTab !== 'winners'}
             >
-                <Winners />
+                <Winners winnersVersion={winnersVersion} />
             </div>
         </div>
     )

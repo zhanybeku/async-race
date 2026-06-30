@@ -33,12 +33,21 @@ function getAnimationMetrics(element: HTMLElement): AnimationMetrics | null {
 
 const activeAnimations = new WeakMap<HTMLElement, () => void>();
 
-export function startCarAnimation(element: HTMLElement, velocity: number) {
+export function startCarAnimation(
+  element: HTMLElement,
+  velocity: number,
+  raceTimeSec?: number,
+) {
   const metrics = getAnimationMetrics(element);
-  if (!metrics) return { stop: () => {} };
+  if (!metrics) {
+    return { stop: () => {}, finished: Promise.resolve() };
+  }
 
   const { travelPx, trackLengthPx } = metrics;
-  const durationMs = (trackLengthPx / velocity) * 500;
+  const durationMs =
+    raceTimeSec !== undefined
+      ? raceTimeSec * 1000
+      : (trackLengthPx / velocity) * 500;
 
   element.style.transform = "translateX(0px)";
 
@@ -46,6 +55,10 @@ export function startCarAnimation(element: HTMLElement, velocity: number) {
   let rafId = 0;
   let stopped = false;
   let lastProgress = 0;
+  let resolveFinished: () => void;
+  const finished = new Promise<void>((resolve) => {
+    resolveFinished = resolve;
+  });
 
   const tick = (now: number) => {
     if (stopped) return;
@@ -56,20 +69,24 @@ export function startCarAnimation(element: HTMLElement, velocity: number) {
 
     if (progress < 1) {
       rafId = requestAnimationFrame(tick);
+    } else {
+      resolveFinished();
     }
   };
 
   rafId = requestAnimationFrame(tick);
 
   const stop = () => {
+    if (stopped) return;
     stopped = true;
     cancelAnimationFrame(rafId);
     element.style.transform = `translateX(${travelPx * lastProgress}px)`;
+    resolveFinished();
   };
 
   activeAnimations.set(element, stop);
 
-  return { stop };
+  return { stop, finished };
 }
 
 export function resetCarPosition(element: HTMLElement) {

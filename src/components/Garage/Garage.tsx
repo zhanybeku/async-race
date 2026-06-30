@@ -34,7 +34,11 @@ const CARS_PER_PAGE = 10;
 type SuccessfulRaceResult = { id: number; time: number };
 type RaceAnnouncement = { name: string; time: number };
 
-const Garage = () => {
+interface GarageProps {
+  onRaceFinish: () => void;
+}
+
+const Garage = ({ onRaceFinish }: GarageProps) => {
   // The cars state
   const [cars, setCars] = useState<Car[]>([]);
   const [page, setPage] = useState(1);
@@ -152,9 +156,28 @@ const Garage = () => {
       const carEl = carRefs.current[id];
       if (carEl) {
         await new Promise(requestAnimationFrame);
-        racingAnimation = startCarAnimation(carEl, velocity);
+        racingAnimation = startCarAnimation(carEl, velocity, raceTime);
       }
 
+      return await finishCarDrive(id, raceTime, racingAnimation);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (message.includes("broken down")) {
+        racingAnimation?.stop();
+        setBrokenIds((prev) => new Set(prev).add(id));
+      } else {
+        console.error(error);
+      }
+      return null;
+    }
+  };
+
+  const finishCarDrive = async (
+    id: number,
+    raceTime: number,
+    racingAnimation: ReturnType<typeof startCarAnimation> | null,
+  ): Promise<SuccessfulRaceResult | null> => {
+    try {
       await driveEngine(id);
 
       setBrokenIds((prev) => {
@@ -219,7 +242,69 @@ const Garage = () => {
       return next;
     });
 
-    const results = await Promise.all(allCars.map((car) => runCarRace(car.id)));
+    const engineStarts = await Promise.all(
+      allCars.map(async (car) => {
+        try {
+          const { velocity, distance } = await startStopEngine(car.id, "started");
+          return {
+            id: car.id,
+            velocity,
+            raceTime: distance / velocity / 1000,
+          };
+        } catch (error) {
+          console.error(error);
+          return null;
+        }
+      }),
+    );
+
+    const startedCars = engineStarts.filter(
+      (start): start is { id: number; velocity: number; raceTime: number } =>
+        start !== null,
+    );
+
+    if (startedCars.length === 0) {
+      setRacingIds(new Set());
+      return;
+    }
+
+    setRacingIds((prev) => {
+      const next = new Set(prev);
+      const startedIds = new Set(startedCars.map((car) => car.id));
+      allCars.forEach((car) => {
+        if (!startedIds.has(car.id)) next.delete(car.id);
+      });
+      return next;
+    });
+
+    await new Promise(requestAnimationFrame);
+
+    const racingAnimations = new Map<
+      number,
+      ReturnType<typeof startCarAnimation>
+    >();
+
+    startedCars.forEach(({ id, velocity, raceTime }) => {
+      const carEl = carRefs.current[id];
+      if (carEl) {
+        racingAnimations.set(
+          id,
+          startCarAnimation(carEl, velocity, raceTime),
+        );
+      }
+    });
+
+    const [results] = await Promise.all([
+      Promise.all(
+        startedCars.map(({ id, raceTime }) =>
+          finishCarDrive(id, raceTime, racingAnimations.get(id) ?? null),
+        ),
+      ),
+      Promise.all(
+        Array.from(racingAnimations.values()).map((animation) => animation.finished),
+      ),
+    ]);
+
     const successfulRuns = results.filter(
       (result): result is SuccessfulRaceResult => result !== null,
     );
@@ -232,6 +317,7 @@ const Garage = () => {
 
     const winnerTime = Number(winner.time.toFixed(2));
     await saveWinner(winner.id, winnerTime);
+    onRaceFinish();
 
     const winningCar = allCars.find((car) => car.id === winner.id);
     if (winningCar) {
@@ -272,6 +358,7 @@ const Garage = () => {
             startIcon={<PlayArrowIcon />}
             sx={{ backgroundColor: "var(--red)" }}
             onClick={onStartAll}
+            disabled={racingIds.size > 0}
           >
             START
           </Button>

@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
 import "./winners.css";
-import { getCars, getWinners } from "../../api/api";
+import { getCars, getWinners, deleteWinner } from "../../api/api";
 import type { Car, Winner } from "../../ts/interfaces";
 
 import Button from "@mui/material/Button";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 type WinnerRow = Winner & { name: string };
 
@@ -30,6 +31,7 @@ const Winners = ({ winnersVersion }: WinnersProps) => {
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const [nameById, setNameById] = useState<Map<number, string>>(new Map());
+  const [deleteId, setDeleteId] = useState<number | null>(null);
 
   const totalPages = Math.max(1, Math.ceil(totalCount / WINNERS_PER_PAGE));
   const shownWinnersCount = winners.length;
@@ -70,21 +72,40 @@ const Winners = ({ winnersVersion }: WinnersProps) => {
     loadWinners(page);
   }, [page, loadWinners, winnersVersion]);
 
+  const onSetToDelete = (id: number) => {
+    setDeleteId(id);
+  };
+
+  const onDeleteWinner = (id: number) => {
+    deleteWinner(id).then(() => {
+      setDeleteId(null);
+      loadWinners(page);
+    });
+  };
+
   return (
     <div className="winners">
       <table className="winners-table">
+        <colgroup>
+          <col className="winners-table__col winners-table__col--rank" />
+          <col className="winners-table__col winners-table__col--car" />
+          <col className="winners-table__col winners-table__col--wins" />
+          <col className="winners-table__col winners-table__col--time" />
+          <col className="winners-table__col winners-table__col--actions" />
+        </colgroup>
         <thead>
           <tr>
             <th>#</th>
             <th>Car</th>
             <th>Wins</th>
             <th>Best time (s)</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
           {winners.length === 0 ? (
             <tr>
-              <td colSpan={4} className="winners-table__empty">
+              <td colSpan={5} className="winners-table__empty">
                 No winners yet
               </td>
             </tr>
@@ -95,6 +116,37 @@ const Winners = ({ winnersVersion }: WinnersProps) => {
                 <td>{winner.name}</td>
                 <td>{winner.wins}</td>
                 <td>{winner.time.toFixed(2)}</td>
+                <td>
+                  {deleteId === winner.id ? (
+                    <div className="delete-winner-container">
+                      <span>Are you sure?</span>
+                      <div className="delete-winner-container__buttons">
+                        <Button
+                          variant="contained"
+                          sx={{ backgroundColor: "var(--red)" }}
+                          onClick={() => onDeleteWinner(winner.id)}
+                        >
+                          YES
+                        </Button>
+                        <Button
+                          variant="contained"
+                          sx={{ backgroundColor: "var(--blue)" }}
+                          onClick={() => setDeleteId(null)}
+                        >
+                          NO
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <Button
+                      variant="contained"
+                      sx={{ backgroundColor: "var(--red)" }}
+                      onClick={() => onSetToDelete(winner.id)}
+                    >
+                      <DeleteIcon />
+                    </Button>
+                  )}
+                </td>
               </tr>
             ))
           )}

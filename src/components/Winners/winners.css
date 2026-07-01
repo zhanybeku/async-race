@@ -4,6 +4,7 @@
 
 .winners-table {
   width: 100%;
+  table-layout: fixed;
   border-collapse: collapse;
   background-color: var(--table-bg);
   border-radius: 8px;
@@ -12,11 +13,28 @@
   font-size: var(--other-size);
 }
 
+.winners-table__col--rank,
+.winners-table__col--wins,
+.winners-table__col--time,
+.winners-table__col--actions {
+  width: calc(100% / 6);
+}
+
+.winners-table__col--car {
+  width: calc(100% * 2 / 6);
+}
+
 .winners-table th,
 .winners-table td {
   padding: 12px 16px;
   text-align: left;
   border-bottom: 2px solid var(--foreground);
+}
+
+.winners-table td:nth-child(2) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .winners-table th {
@@ -33,6 +51,20 @@
   text-align: center;
   color: white;
   padding: 24px;
+}
+
+.delete-winner-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.delete-winner-container__buttons {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  align-items: center;
 }
 
 .winners-pagination {
